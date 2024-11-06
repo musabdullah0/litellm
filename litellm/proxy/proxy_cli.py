@@ -17,7 +17,7 @@ config_filename = "litellm.secrets"
 
 litellm_mode = os.getenv("LITELLM_MODE", "DEV")  # "PRODUCTION", "DEV"
 if litellm_mode == "DEV":
-    load_dotenv()
+    load_dotenv()  # noqa
 import shutil
 from enum import Enum
 from importlib import resources
@@ -397,6 +397,7 @@ def run_server(  # noqa: PLR0915
             api_base = test
         client = openai.OpenAI(api_key="My API Key", base_url=api_base)
 
+        # Testing ChatCompletions API
         response = client.chat.completions.create(
             model=request_model,
             messages=[
@@ -407,12 +408,12 @@ def run_server(  # noqa: PLR0915
             ],
             max_tokens=256,
         )
-        click.echo(f"\nLiteLLM: response from proxy {response}")
+        click.echo(f"\nLiteLLM: ChatCompletions response from proxy {response}")
 
-        print(  # noqa
-            f"\n LiteLLM: Making a test ChatCompletions + streaming r equest to proxy. Model={request_model}"
+        # Testing ChatCompletions + Streaming API
+        click.echo(
+            f"\nLiteLLM: Making a test ChatCompletions + streaming request to your proxy. Model={request_model}"
         )
-
         response = client.chat.completions.create(
             model=request_model,
             messages=[
@@ -423,13 +424,18 @@ def run_server(  # noqa: PLR0915
             ],
             stream=True,
         )
+        click.echo(f"LiteLLM: ChatCompletions + streaming response from proxy:")
         for chunk in response:
-            click.echo(f"LiteLLM: streaming response from proxy {chunk}")
-        print("\n making completion request to proxy")  # noqa
+            click.echo(chunk)
+
+        # Testing Completions API
+        click.echo(
+            f"\nLiteLLM: Making a test Completions request to your proxy. Model={request_model}"
+        )  # noqa
         response = client.completions.create(
             model=request_model, prompt="this is a test request, write a short poem"
         )
-        print(response)  # noqa
+        click.echo(f"\nLiteLLM: Completions response from proxy {response}")
 
         return
     else:
